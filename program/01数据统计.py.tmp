@@ -1,0 +1,75 @@
+from pathlib import Path
+import warnings
+import matplotlib.pyplot as plt
+import pandas as pd
+warnings.filterwarnings('ignore')
+import pylustrator
+#设置
+pd.set_option('display.max_columns', None)
+pd.options.display.width = 150
+
+plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
+plt.rcParams['axes.unicode_minus'] = False
+
+BASE_DIR = Path(__file__).parent.parent
+data_path = BASE_DIR / "Resources/"
+output_path = BASE_DIR / "Output/"
+
+all_patients_file=data_path /"01_所有病人汇总.csv"
+
+copd_patients=pd.read_csv(all_patients_file)
+AF_index="AF,LBBB,PAC,PVC,RBBB,SVT".split(",")
+af_count = copd_patients["AF"].sum()
+lbbb_count = copd_patients["LBBB"].sum()
+pac_count = copd_patients["PAC"].sum()
+pvc_count = copd_patients["PVC"].sum()
+rbbb_count = copd_patients["RBBB"].sum()
+svt_count = copd_patients["SVT"].sum()
+data = {
+    "心律失常类型": AF_index,
+    "发生次数": [af_count, lbbb_count, pac_count, pvc_count, rbbb_count, svt_count]
+}
+
+result_df = pd.DataFrame(data)
+result_df = result_df.sort_values(by="发生次数", ascending=False)
+
+# 启动 pylustrator
+pylustrator.start()
+
+# 创建柱状图
+plt.figure(figsize=(10, 6))
+bars = plt.bar(result_df["心律失常类型"], result_df["发生次数"], color='skyblue')
+
+# 在每个柱子上添加具体值
+for bar in bars:
+    height = bar.get_height()
+    plt.text(
+        bar.get_x() + bar.get_width() / 2,  # x 坐标：柱子中心
+        height,                             # y 坐标：柱子顶部
+        f"{int(height)}",                   # 显示的文本
+        ha='center',                        # 水平对齐方式
+        va='bottom',                        # 垂直对齐方式
+        fontsize=12,                        # 字体大小
+        color='black'                       # 字体颜色
+    )
+
+# 设置标题和标签
+plt.title("COPD 患者心律失常发生频率", fontsize=16, pad=20)
+plt.xlabel("心律失常类型", fontsize=14, labelpad=10)
+plt.ylabel("发生次数", fontsize=14, labelpad=10)
+
+# 设置刻度样式
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+
+# 美化布局
+plt.tight_layout()
+
+# 显示图表
+#% start: automatic generated code from pylustrator
+plt.figure(1).ax_dict = {ax.get_label(): ax for ax in plt.figure(1).axes}
+import matplotlib as mpl
+getattr(plt.figure(1), '_pylustrator_init', lambda: ...)()
+plt.figure(1).axes[0].set(xticks=[np.int64(0), np.int64(1), np.int64(2), np.int64(3), np.int64(4), np.int64(5)], ylim=(0., 230.))
+#% end: automatic generated code from pylustrator
+plt.show()
